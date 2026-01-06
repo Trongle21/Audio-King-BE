@@ -1,0 +1,38 @@
+{
+  "name": "audio",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "json": "json-server db.json --port 3000 --watch",
+    "start": "nodemon index.js",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "2.4.3",
+    "cookie-parser": "1.4.7",
+    "cors": "2.8.5",
+    "dotenv": "16.4.7",
+    "express": "^5.2.1",
+    "json-server": "^0.17.0",
+    "jsonwebtoken": "9.0.2",
+    "mongoose": "^8.9.2",
+    "mongoose-delete": "1.0.2",
+    "nodemailer": "^7.0.11",
+    "nodemon": "^3.1.11",
+    "yarn": "^1.22.22",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4"
+  }
+}
