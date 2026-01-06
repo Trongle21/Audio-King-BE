@@ -1,12 +1,12 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 const { EMAIL_USER, EMAIL_PASS } = process.env;
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   port: 587,
   secure: false,
   auth: {
@@ -18,13 +18,13 @@ const transporter = nodemailer.createTransport({
 async function nodeMailer(user) {
   if (user) {
     const info = await transporter.sendMail({
-      from: "Kaio Foo Koch 👻 <trongleele@gmail.com>",
+      from: 'Kaio Foo Koch 👻 <trongleele@gmail.com>',
       to: user.email,
-      subject: "Hello ✔",
-      text: "Hello world?",
-      html: "<b>Hello world?</b>",
+      subject: 'Hello ✔',
+      text: 'Hello world?',
+      html: '<b>Hello world?</b>',
     });
-    console.log("Message sent: %s", info.messageId);
+    console.log('Message sent: %s', info.messageId);
   }
 }
 

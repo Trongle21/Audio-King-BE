@@ -14,10 +14,9 @@ routes(app);
 
 app.use((_req, res) => {
   return res.status(404).json({
-    message: "Router not found",
+    message: 'Router not found',
   });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

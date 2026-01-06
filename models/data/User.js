@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import MongooseDelete from 'mongoose-delete';
 
 const USER_ROLE = ['user', 'admin'];
 
@@ -11,6 +10,10 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    isDelete: {
+      type: Boolean,
+      default: false,
+    },
     role: {
       type: String,
       default: 'user',
@@ -20,11 +23,6 @@ const UserSchema = new Schema(
   },
   { timestamps: true }
 );
-
-UserSchema.plugin(MongooseDelete, {
-  deletedAt: true,
-  overrideMethods: true,
-});
 
 const User = mongoose.model('User', UserSchema);
 export default User;
