@@ -37,7 +37,7 @@ const AuthController = {
         password: secPass,
       });
 
-      const { password, ...others } = newUser._doc;
+      const { ...others } = newUser._doc;
 
       // await nodeMailer(others);
 
@@ -105,7 +105,7 @@ const AuthController = {
         sameSite: 'strict',
       });
 
-      const { password, ...others } = user._doc;
+      const { ...others } = user._doc;
 
       return handleSuccess200(res, 'Đăng nhập thành công', {
         others,

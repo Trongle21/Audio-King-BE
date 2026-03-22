@@ -9,7 +9,9 @@ const trendingItemSchema = z.object({
 });
 
 const updateTrendingSchema = z.object({
-  items: z.array(trendingItemSchema).min(1, 'Danh sách trending không được trống'),
+  items: z
+    .array(trendingItemSchema)
+    .min(1, 'Danh sách trending không được trống'),
 });
 
 export { updateTrendingSchema };

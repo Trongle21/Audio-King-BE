@@ -26,7 +26,7 @@ const productBase = {
     .int('Số lượng phải là số nguyên')
     .min(0, 'Số lượng không được âm'),
   status: z
-        .number({ invalid_type_error: 'Trạng thái phải là số' })
+    .number({ invalid_type_error: 'Trạng thái phải là số' })
     .int('Trạng thái phải là số nguyên')
     .refine(
       val => PRODUCT_STATUS_VALUES.includes(val),

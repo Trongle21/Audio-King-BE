@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import OrderController from '../controllers/OrderController.js';
-import { dataMiddleWare, verifyAuth, verifyToken } from '../middleWare/index.js';
+import {
+  dataMiddleWare,
+  verifyAuth,
+  verifyToken,
+} from '../middleWare/index.js';
 import { createOrderSchema } from '../schemas/index.js';
 
 const router = Router();

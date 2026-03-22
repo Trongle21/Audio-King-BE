@@ -32,7 +32,7 @@ const UserController = {
       user.isDelete = true;
       await user.save();
 
-      const { password, ...others } = user._doc;
+      const { ...others } = user._doc;
 
       return handleSuccess200(res, 'Xóa người dùng thành công', { ...others });
     } catch (error) {
@@ -91,7 +91,7 @@ const UserController = {
 
       await user.save();
 
-      const { password: _, ...others } = user._doc;
+      const { ...others } = user._doc;
 
       return handleSuccess200(res, 'Đổi mật khẩu thành công', others);
     } catch (error) {

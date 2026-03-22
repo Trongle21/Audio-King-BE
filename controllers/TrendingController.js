@@ -15,7 +15,8 @@ const TrendingController = {
         .populate({
           path: 'product',
           match: { isDelete: false },
-          select: 'name slug price sale stock status description sku rating images thumbnail',
+          select:
+            'name slug price sale stock status description sku rating images thumbnail',
         })
         .lean();
 
@@ -72,7 +73,8 @@ const TrendingController = {
         .populate({
           path: 'product',
           match: { isDelete: false },
-          select: 'name slug price sale stock status description sku rating images thumbnail',
+          select:
+            'name slug price sale stock status description sku rating images thumbnail',
         })
         .lean();
 

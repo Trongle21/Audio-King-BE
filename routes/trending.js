@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import TrendingController from '../controllers/TrendingController.js';
-import { dataMiddleWare, verifyAuth, verifyToken } from '../middleWare/index.js';
+import {
+  dataMiddleWare,
+  verifyAuth,
+  verifyToken,
+} from '../middleWare/index.js';
 import { updateTrendingSchema } from '../schemas/index.js';
 
 const router = Router();
