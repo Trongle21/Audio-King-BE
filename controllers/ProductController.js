@@ -216,10 +216,20 @@ const ProductController = {
     }
   },
 
-  // Danh sách sản phẩm (user & admin) + tìm kiếm + filter
+  // Danh sách sản phẩm (user & admin) + tìm kiếm + filter + sort + phân trang
   getAll: async (req, res) => {
     try {
-      const { q, status, categoryId } = req.query;
+      const {
+        q,
+        status,
+        categoryId,
+        minPrice,
+        maxPrice,
+        sortBy = 'createdAt',
+        order = 'desc',
+        page = 1,
+        limit = 12,
+      } = req.query;
 
       const matchStage = {
         isDelete: false,
@@ -244,27 +254,79 @@ const ProductController = {
         matchStage.categories = { $in: [categoryId] };
       }
 
-      const products = await Product.aggregate([
-        { $match: matchStage },
-        {
-          $lookup: {
-            from: 'categories',
-            localField: 'categories',
-            foreignField: '_id',
-            as: 'categories',
-            pipeline: [
-              { $match: { isDelete: false } },
-              { $project: { _id: 1, name: 1, slug: 1 } },
-            ],
+      const minPriceNum = Number(minPrice);
+      const maxPriceNum = Number(maxPrice);
+
+      if (!isNaN(minPriceNum) || !isNaN(maxPriceNum)) {
+        matchStage.price = {};
+
+        if (!isNaN(minPriceNum)) {
+          matchStage.price.$gte = minPriceNum;
+        }
+
+        if (!isNaN(maxPriceNum)) {
+          matchStage.price.$lte = maxPriceNum;
+        }
+      }
+
+      const allowedSort = {
+        name: 'name',
+        price: 'price',
+        createdAt: 'createdAt',
+      };
+
+      const sortField = allowedSort[sortBy] || 'createdAt';
+      const sortDirection = order === 'asc' ? 1 : -1;
+
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 12, 1);
+      const skip = (pageNum - 1) * limitNum;
+
+      const [products, total] = await Promise.all([
+        Product.aggregate([
+          { $match: matchStage },
+          {
+            $lookup: {
+              from: 'categories',
+              localField: 'categories',
+              foreignField: '_id',
+              as: 'categories',
+              pipeline: [
+                { $match: { isDelete: false } },
+                { $project: { _id: 1, name: 1, slug: 1 } },
+              ],
+            },
           },
-        },
+          {
+            $sort: {
+              [sortField]: sortDirection,
+              _id: 1,
+            },
+          },
+          { $skip: skip },
+          { $limit: limitNum },
+        ]),
+        Product.countDocuments(matchStage),
       ]);
 
-      return handleSuccess200(
-        res,
-        'Lấy danh sách sản phẩm thành công',
-        products
-      );
+      return handleSuccess200(res, 'Lấy danh sách sản phẩm thành công', {
+        items: products,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+        filter: {
+          q: q || null,
+          status: status !== undefined ? Number(status) : null,
+          categoryId: categoryId || null,
+          minPrice: !isNaN(minPriceNum) ? minPriceNum : null,
+          maxPrice: !isNaN(maxPriceNum) ? maxPriceNum : null,
+          sortBy: sortField,
+          order: sortDirection === 1 ? 'asc' : 'desc',
+        },
+      });
     } catch (error) {
       return handleError500(res, error);
     }
