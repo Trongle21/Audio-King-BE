@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "api/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "json": "json-server db.json --port 3000 --watch",
-    "start": "nodemon index.js",
+    "start": "nodemon api/index.js",
     "build": "npm run lint && npm run format",
     "format": "prettier --write .",
     "lint": "eslint .",
