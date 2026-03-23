@@ -3,15 +3,13 @@ import z from 'zod';
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
-const USERNAME_REGEX = /^[a-zA-Z0-9]+$/;
 
 const registerSchema = z
   .object({
     username: z
       .string()
       .min(3, 'Tên người dùng phải có ít nhất 3 ký tự')
-      .max(20, 'Tên người dùng không được vượt quá 20 ký tự')
-      .regex(USERNAME_REGEX, 'Tên người dùng không hợp lệ'),
+      .max(20, 'Tên người dùng không được vượt quá 20 ký tự'),
     email: z
       .string()
       .email(EMAIL_REGEX, 'Email không hợp lệ')
