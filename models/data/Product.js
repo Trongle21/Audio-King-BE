@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import { PRODUCT_STATUS, PRODUCT_STATUS_VALUES } from '../../enums/status.js';
 
 const ImageSchema = new Schema(
   {
@@ -12,18 +11,9 @@ const ImageSchema = new Schema(
 const ProductSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, index: true },
     price: { type: Number, required: true, min: 0 },
-    sale: { type: Number, min: 0, max: 100, default: null },
     stock: { type: Number, required: true, min: 0 },
-    status: {
-      type: Number,
-      enum: PRODUCT_STATUS_VALUES,
-      default: PRODUCT_STATUS.ACTIVE,
-      index: true,
-    },
     description: { type: String, default: '' },
-    sku: { type: String, required: true, unique: true, trim: true },
     rating: { type: Number, min: 0, max: 5, default: 0 },
     categories: [
       {
@@ -40,6 +30,15 @@ const ProductSchema = new Schema(
       },
     },
     thumbnail: { type: String, required: true },
+    specifications: {
+      type: Map,
+      of: String,
+      default: {},
+    },
+    highlights: {
+      type: [String],
+      default: [],
+    },
     isDelete: {
       type: Boolean,
       default: false,

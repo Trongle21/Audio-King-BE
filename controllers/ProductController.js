@@ -1,5 +1,6 @@
 import Product from '../models/data/Product.js';
 import Category from '../models/data/Category.js';
+import cloudinary from '../configs/cloudinary.js';
 import {
   handleSuccess200,
   handleSuccess201,
@@ -14,23 +15,88 @@ const ProductController = {
   // Tạo sản phẩm (admin)
   create: async (req, res) => {
     try {
-      const {
-        name,
-        price,
-        sale,
-        stock,
-        status,
-        description,
-        sku,
-        rating,
-        categories,
-        images,
-        thumbnail,
-      } = req.body;
+      const { name, description, sku, categories, images, thumbnail } =
+        req.body;
+
+      const price = Number(req.body.price);
+      const sale =
+        req.body.sale !== undefined &&
+        req.body.sale !== null &&
+        req.body.sale !== ''
+          ? Number(req.body.sale)
+          : undefined;
+      const stock = Number(req.body.stock);
+      const status =
+        req.body.status !== undefined &&
+        req.body.status !== null &&
+        req.body.status !== ''
+          ? Number(req.body.status)
+          : undefined;
+      const rating =
+        req.body.rating !== undefined &&
+        req.body.rating !== null &&
+        req.body.rating !== ''
+          ? Number(req.body.rating)
+          : undefined;
+
+      let parsedCategories = [];
+      if (Array.isArray(categories)) {
+        parsedCategories = categories;
+      } else if (typeof categories === 'string') {
+        try {
+          parsedCategories = JSON.parse(categories);
+        } catch {
+          return handleError400(res, 'Categories không đúng định dạng JSON');
+        }
+      }
+
+      let parsedImages = [];
+      if (Array.isArray(images)) {
+        parsedImages = images;
+      } else if (typeof images === 'string') {
+        try {
+          parsedImages = JSON.parse(images);
+        } catch {
+          parsedImages = [];
+        }
+      }
+
+      let parsedThumbnail = thumbnail;
+      if (typeof thumbnail === 'string') {
+        try {
+          parsedThumbnail = JSON.parse(thumbnail);
+        } catch {
+          parsedThumbnail = thumbnail;
+        }
+      }
+
+      const uploadedFiles = req.files || [];
+      if (uploadedFiles.length) {
+        const uploadedResults = await Promise.all(
+          uploadedFiles.map(file => {
+            const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+            return cloudinary.uploader.upload(dataUri, {
+              folder: 'uploads_audio',
+              resource_type: 'auto',
+            });
+          })
+        );
+
+        const uploadedImages = uploadedResults.map((item, index) => ({
+          url: item.secure_url,
+          alt: uploadedFiles[index].originalname,
+        }));
+
+        parsedImages = [...parsedImages, ...uploadedImages];
+
+        if (!parsedThumbnail && uploadedImages.length) {
+          parsedThumbnail = uploadedImages[0].url;
+        }
+      }
 
       // kiểm tra categories tồn tại
       const foundCategories = await Category.find({
-        _id: { $in: categories },
+        _id: { $in: parsedCategories },
         isDelete: false,
       }).select('_id');
 
@@ -38,7 +104,7 @@ const ProductController = {
         return handleError400(res, 'Category không hợp lệ');
       }
 
-      if (foundCategories.length !== categories.length) {
+      if (foundCategories.length !== parsedCategories.length) {
         return handleError400(
           res,
           'Một số category không tồn tại hoặc đã bị xóa'
@@ -68,8 +134,8 @@ const ProductController = {
         sku,
         rating,
         categories: foundCategories.map(c => c._id),
-        images,
-        thumbnail,
+        images: parsedImages,
+        thumbnail: parsedThumbnail,
       });
 
       return handleSuccess201(res, 'Tạo sản phẩm thành công', product);

@@ -1,17 +1,30 @@
 import { Router } from 'express';
 import ProductController from '../controllers/ProductController.js';
-import { verifyAuth, verifyToken } from '../middleWare/index.js';
-import { dataMiddleWare } from '../middleWare/index.js';
-import { createProductSchema, updateProductSchema } from '../schemas/index.js';
+import UploadController from '../controllers/UploadController.js';
+import {
+  dataMiddleWare,
+  upload,
+  verifyAuth,
+  verifyToken,
+} from '../middleWare/index.js';
+import { updateProductSchema } from '../schemas/index.js';
 
 const router = Router();
+
+router.post(
+  '/upload-audio',
+  verifyToken,
+  verifyAuth,
+  upload.single('file'),
+  UploadController.uploadAudio
+);
 
 // Admin: tạo sản phẩm
 router.post(
   '/',
   verifyToken,
   verifyAuth,
-  dataMiddleWare(createProductSchema),
+  upload.array('files', 10),
   ProductController.create
 );
 
