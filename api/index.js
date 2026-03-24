@@ -6,8 +6,6 @@ import routes from '../routes/index.js';
 
 const app = express();
 
-connect();
-
 const allowedOrigins = [
   'http://localhost:3000',
   'https://audio-king-fe.vercel.app',
@@ -40,9 +38,20 @@ app.use((_req, res) => {
 
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+
+  const bootstrap = async () => {
+    try {
+      await connect();
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    } catch {
+      console.error('Cannot start server because database connection failed');
+      process.exit(1);
+    }
+  };
+
+  bootstrap();
 }
 
 export default app;
