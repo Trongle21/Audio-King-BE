@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+mongoose.set('bufferCommands', false);
+mongoose.set('bufferTimeoutMS', 0);
+
 const { MONGO_URL } = process.env;
 
 const connect = async () => {
