@@ -29,7 +29,7 @@ const ProductSchema = new Schema(
         message: 'Sản phẩm phải có ít nhất 1 ảnh',
       },
     },
-    thumbnail: { type: String, required: true },
+    thumbnail: { type: ImageSchema, required: true },
     specifications: {
       type: Map,
       of: String,
