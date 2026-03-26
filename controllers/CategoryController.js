@@ -127,10 +127,10 @@ const CategoryController = {
     }
   },
 
-  // Lấy danh sách category + products (user & admin) + tìm kiếm
+  // Lấy danh sách category + products (user & admin) + tìm kiếm + phân trang
   getAllWithProducts: async (req, res) => {
     try {
-      const { q } = req.query;
+      const { q, page = 1, limit = 12 } = req.query;
 
       const matchStage = {
         isDelete: false,
@@ -143,45 +143,66 @@ const CategoryController = {
         ];
       }
 
-      const categories = await Category.aggregate([
-        {
-          $match: matchStage,
-        },
-        {
-          $lookup: {
-            from: 'products',
-            localField: '_id',
-            foreignField: 'categories',
-            as: 'products',
-            pipeline: [
-              { $match: { isDelete: false } },
-              {
-                $project: {
-                  _id: 1,
-                  name: 1,
-                  slug: 1,
-                  price: 1,
-                  description: 1,
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 12, 1);
+      const skip = (pageNum - 1) * limitNum;
+
+      const [categories, total] = await Promise.all([
+        Category.aggregate([
+          {
+            $match: matchStage,
+          },
+          {
+            $lookup: {
+              from: 'products',
+              localField: '_id',
+              foreignField: 'categories',
+              as: 'products',
+              pipeline: [
+                { $match: { isDelete: false } },
+                {
+                  $project: {
+                    _id: 1,
+                    name: 1,
+                    slug: 1,
+                    price: 1,
+                    description: 1,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            slug: 1,
-            isDelete: 1,
-            products: 1,
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+              isDelete: 1,
+              products: 1,
+            },
           },
-        },
+          { $sort: { createdAt: -1, _id: 1 } },
+          { $skip: skip },
+          { $limit: limitNum },
+        ]),
+        Category.countDocuments(matchStage),
       ]);
 
       return handleSuccess200(
         res,
         'Lấy danh sách category kèm sản phẩm thành công',
-        categories
+        {
+          items: categories,
+          pagination: {
+            total,
+            page: pageNum,
+            limit: limitNum,
+            totalPages: Math.ceil(total / limitNum),
+          },
+          filter: {
+            q: q || null,
+          },
+        }
       );
     } catch (error) {
       return handleError500(res, error);

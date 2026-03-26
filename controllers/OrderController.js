@@ -95,10 +95,40 @@ const OrderController = {
   },
 
   // Admin: xem danh sách đơn hàng
-  getAll: async (_req, res) => {
+  getAll: async (req, res) => {
     try {
-      const orders = await Order.find().sort({ createdAt: -1 }).lean();
-      return handleSuccess200(res, 'Lấy danh sách đơn hàng thành công', orders);
+      const { page = 1, limit = 12, status } = req.query;
+
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 12, 1);
+      const skip = (pageNum - 1) * limitNum;
+
+      const matchStage = {};
+      if (status) {
+        matchStage.status = status;
+      }
+
+      const [orders, total] = await Promise.all([
+        Order.find(matchStage)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limitNum)
+          .lean(),
+        Order.countDocuments(matchStage),
+      ]);
+
+      return handleSuccess200(res, 'Lấy danh sách đơn hàng thành công', {
+        items: orders,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+        filter: {
+          status: status || null,
+        },
+      });
     } catch (error) {
       return handleError500(res, error);
     }
