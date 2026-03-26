@@ -13,7 +13,15 @@ const ProductController = {
   // Tạo sản phẩm (admin)
   create: async (req, res) => {
     try {
-      const { name, description, categories, images, thumbnail } = req.body;
+      const {
+        name,
+        description,
+        categories,
+        images,
+        thumbnail,
+        specifications,
+        highlights,
+      } = req.body;
 
       const price = Number(req.body.price);
       const sale =
@@ -63,7 +71,29 @@ const ProductController = {
         try {
           parsedThumbnail = JSON.parse(thumbnail);
         } catch {
-          parsedThumbnail = thumbnail;
+          parsedThumbnail = { url: thumbnail, alt: '' };
+        }
+      }
+
+      let parsedSpecifications = {};
+      if (specifications && typeof specifications === 'object') {
+        parsedSpecifications = specifications;
+      } else if (typeof specifications === 'string') {
+        try {
+          parsedSpecifications = JSON.parse(specifications);
+        } catch {
+          parsedSpecifications = {};
+        }
+      }
+
+      let parsedHighlights = [];
+      if (Array.isArray(highlights)) {
+        parsedHighlights = highlights;
+      } else if (typeof highlights === 'string') {
+        try {
+          parsedHighlights = JSON.parse(highlights);
+        } catch {
+          parsedHighlights = [];
         }
       }
 
@@ -87,7 +117,7 @@ const ProductController = {
         parsedImages = [...parsedImages, ...uploadedImages];
 
         if (!parsedThumbnail && uploadedImages.length) {
-          parsedThumbnail = uploadedImages[0].url;
+          parsedThumbnail = uploadedImages[0];
         }
       }
 
@@ -119,6 +149,8 @@ const ProductController = {
         categories: foundCategories.map(c => c._id),
         images: parsedImages,
         thumbnail: parsedThumbnail,
+        specifications: parsedSpecifications,
+        highlights: parsedHighlights,
       });
 
       return handleSuccess201(res, 'Tạo sản phẩm thành công', product);
@@ -178,6 +210,10 @@ const ProductController = {
         product.images = updateData.images;
       if (typeof updateData.thumbnail !== 'undefined')
         product.thumbnail = updateData.thumbnail;
+      if (typeof updateData.specifications !== 'undefined')
+        product.specifications = updateData.specifications;
+      if (typeof updateData.highlights !== 'undefined')
+        product.highlights = updateData.highlights;
 
       await product.save();
 

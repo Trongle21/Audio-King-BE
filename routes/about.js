@@ -4,8 +4,6 @@ import categoryRouter from './category.js';
 import productRouter from './product.js';
 import orderRouter from './order.js';
 import trendingRouter from './trending.js';
-import bannerRouter from './banner.js';
-import aboutRouter from './about.js';
 
 const routes = app => {
   app.use('/api/auth', authRouter);
@@ -14,8 +12,6 @@ const routes = app => {
   app.use('/api/products', productRouter);
   app.use('/api/orders', orderRouter);
   app.use('/api/trending', trendingRouter);
-  app.use('/api/banners', bannerRouter);
-  app.use('/api/about', aboutRouter);
 };
 
 export default routes;
