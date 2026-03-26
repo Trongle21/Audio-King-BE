@@ -15,8 +15,7 @@ const ProductController = {
   // Tạo sản phẩm (admin)
   create: async (req, res) => {
     try {
-      const { name, description, sku, categories, images, thumbnail } =
-        req.body;
+      const { name, description, categories, images, thumbnail } = req.body;
 
       const price = Number(req.body.price);
       const sale =
@@ -111,16 +110,11 @@ const ProductController = {
         );
       }
 
-      const slug = generateProductSlug(name, sku, description);
+      const slug = generateProductSlug(name, description);
 
       const existedSlug = await Product.findOne({ slug });
       if (existedSlug) {
         return handleError409(res, 'Sản phẩm đã tồn tại');
-      }
-
-      const existedSku = await Product.findOne({ sku });
-      if (existedSku) {
-        return handleError409(res, 'SKU sản phẩm đã tồn tại');
       }
 
       const product = await Product.create({
@@ -131,7 +125,6 @@ const ProductController = {
         stock,
         status,
         description,
-        sku,
         rating,
         categories: foundCategories.map(c => c._id),
         images: parsedImages,
@@ -155,17 +148,12 @@ const ProductController = {
         return handleError404(res, 'Sản phẩm không tồn tại');
       }
 
-      // Nếu có thay đổi name, sku, hoặc description => regenerate slug
-      if (
-        updateData.name ||
-        updateData.sku ||
-        typeof updateData.description !== 'undefined'
-      ) {
+      // Nếu có thay đổi name hoặc description => regenerate slug
+      if (updateData.name || typeof updateData.description !== 'undefined') {
         const newName = updateData.name || product.name;
-        const newSku = updateData.sku || product.sku;
         const newDescription = updateData.description ?? product.description;
 
-        const slug = generateProductSlug(newName, newSku, newDescription);
+        const slug = generateProductSlug(newName, newDescription);
         const existedSlug = await Product.findOne({
           _id: { $ne: id },
           slug,
@@ -178,17 +166,6 @@ const ProductController = {
 
       if (updateData.name) {
         product.name = updateData.name;
-      }
-
-      if (updateData.sku && updateData.sku !== product.sku) {
-        const existedSku = await Product.findOne({
-          _id: { $ne: id },
-          sku: updateData.sku,
-        });
-        if (existedSku) {
-          return handleError409(res, 'SKU sản phẩm đã tồn tại');
-        }
-        product.sku = updateData.sku;
       }
 
       if (updateData.categories) {
@@ -305,7 +282,7 @@ const ProductController = {
         matchStage.$or = [
           { name: { $regex: q, $options: 'i' } },
           { slug: { $regex: q, $options: 'i' } },
-          { sku: { $regex: q, $options: 'i' } },
+
         ];
       }
 

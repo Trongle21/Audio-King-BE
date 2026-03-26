@@ -34,10 +34,6 @@ const productBase = {
     )
     .optional(),
   description: z.string().max(2000).optional(),
-  sku: z
-    .string()
-    .min(3, 'SKU phải có ít nhất 3 ký tự')
-    .max(50, 'SKU không được quá 50 ký tự'),
   rating: z
     .number({ invalid_type_error: 'Rating phải là số' })
     .min(0, 'Rating không được âm')

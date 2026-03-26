@@ -10,13 +10,12 @@ export const slugify = (str = '') => {
     .replace(/^-+|-+$/g, ''); // bỏ - ở đầu/cuối
 };
 
-// Tạo slug cho product từ name, sku, description
-export const generateProductSlug = (name = '', sku = '', description = '') => {
+// Tạo slug cho product từ name và description
+export const generateProductSlug = (name = '', description = '') => {
   const nameSlug = slugify(name);
-  const skuSlug = slugify(sku);
   const descSlug = slugify(description.slice(0, 50)); // lấy 50 ký tự đầu của description
 
-  const parts = [nameSlug, skuSlug];
+  const parts = [nameSlug];
   if (descSlug) {
     parts.push(descSlug);
   }
