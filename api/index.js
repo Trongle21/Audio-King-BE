@@ -6,6 +6,8 @@ import routes from '../routes/index.js';
 
 const app = express();
 
+await connect();
+
 const allowedOrigins = [
   'http://localhost:3000',
   'https://audio-king-fe.vercel.app',
