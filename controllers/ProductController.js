@@ -6,9 +6,7 @@ import {
   handleSuccess201,
   handleError400,
   handleError404,
-  handleError409,
   handleError500,
-  generateProductSlug,
 } from '../helper/index.js';
 
 const ProductController = {
@@ -110,16 +108,8 @@ const ProductController = {
         );
       }
 
-      const slug = generateProductSlug(name, description);
-
-      const existedSlug = await Product.findOne({ slug });
-      if (existedSlug) {
-        return handleError409(res, 'Sản phẩm đã tồn tại');
-      }
-
       const product = await Product.create({
         name,
-        slug,
         price,
         sale,
         stock,
@@ -146,22 +136,6 @@ const ProductController = {
       const product = await Product.findById(id);
       if (!product || product.isDelete) {
         return handleError404(res, 'Sản phẩm không tồn tại');
-      }
-
-      // Nếu có thay đổi name hoặc description => regenerate slug
-      if (updateData.name || typeof updateData.description !== 'undefined') {
-        const newName = updateData.name || product.name;
-        const newDescription = updateData.description ?? product.description;
-
-        const slug = generateProductSlug(newName, newDescription);
-        const existedSlug = await Product.findOne({
-          _id: { $ne: id },
-          slug,
-        });
-        if (existedSlug) {
-          return handleError409(res, 'Slug sản phẩm đã tồn tại');
-        }
-        product.slug = slug;
       }
 
       if (updateData.name) {
@@ -279,11 +253,7 @@ const ProductController = {
       };
 
       if (q) {
-        matchStage.$or = [
-          { name: { $regex: q, $options: 'i' } },
-          { slug: { $regex: q, $options: 'i' } },
-
-        ];
+        matchStage.$or = [{ name: { $regex: q, $options: 'i' } }];
       }
 
       if (status !== undefined) {
@@ -336,7 +306,7 @@ const ProductController = {
               as: 'categories',
               pipeline: [
                 { $match: { isDelete: false } },
-                { $project: { _id: 1, name: 1, slug: 1 } },
+                { $project: { _id: 1, name: 1 } },
               ],
             },
           },
@@ -386,7 +356,7 @@ const ProductController = {
       }).populate({
         path: 'categories',
         match: { isDelete: false },
-        select: 'name slug',
+        select: 'name',
       });
 
       if (!product) {
