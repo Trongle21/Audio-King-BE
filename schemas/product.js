@@ -43,7 +43,7 @@ const productBase = {
     .array(z.string().min(1, 'CategoryId không hợp lệ'))
     .min(1, 'Sản phẩm phải thuộc ít nhất 1 category'),
   images: z.array(IMAGE_SCHEMA).min(1, 'Sản phẩm phải có ít nhất 1 ảnh'),
-  thumbnail: z.string().url('Thumbnail phải là URL hợp lệ'),
+  thumbnail: IMAGE_SCHEMA,
 };
 
 const createProductSchema = z.object(productBase);
