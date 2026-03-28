@@ -1,4 +1,5 @@
 import Banner from '../models/data/Banner.js';
+import cloudinary from '../configs/cloudinary.js';
 import {
   handleSuccess200,
   handleSuccess201,
@@ -19,11 +20,26 @@ const BannerController = {
 
   create: async (req, res) => {
     try {
-      const { images } = req.body;
+      const uploadedFiles = req.files || [];
 
-      if (!Array.isArray(images) || images.length === 0) {
-        return handleError400(res, 'Banner phải có ít nhất 1 ảnh');
+      if (!uploadedFiles.length) {
+        return handleError400(res, 'Banner phải có ít nhất 1 ảnh upload');
       }
+
+      const uploadedResults = await Promise.all(
+        uploadedFiles.map(file => {
+          const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          return cloudinary.uploader.upload(dataUri, {
+            folder: 'uploads_audio',
+            resource_type: 'auto',
+          });
+        })
+      );
+
+      const images = uploadedResults.map((item, index) => ({
+        url: item.secure_url,
+        alt: uploadedFiles[index].originalname,
+      }));
 
       const banner = await Banner.create({ images });
       return handleSuccess201(res, 'Tạo banner thành công', banner);
@@ -35,19 +51,30 @@ const BannerController = {
   update: async (req, res) => {
     try {
       const { id } = req.params;
-      const { images } = req.body;
-
       const banner = await Banner.findById(id);
       if (!banner) {
         return handleError404(res, 'Banner không tồn tại');
       }
 
-      if (typeof images !== 'undefined') {
-        if (!Array.isArray(images) || images.length === 0) {
-          return handleError400(res, 'Banner phải có ít nhất 1 ảnh');
-        }
-        banner.images = images;
+      const uploadedFiles = req.files || [];
+      if (!uploadedFiles.length) {
+        return handleError400(res, 'Vui lòng upload ảnh banner để cập nhật');
       }
+
+      const uploadedResults = await Promise.all(
+        uploadedFiles.map(file => {
+          const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          return cloudinary.uploader.upload(dataUri, {
+            folder: 'uploads_audio',
+            resource_type: 'auto',
+          });
+        })
+      );
+
+      banner.images = uploadedResults.map((item, index) => ({
+        url: item.secure_url,
+        alt: uploadedFiles[index].originalname,
+      }));
 
       await banner.save();
       return handleSuccess200(res, 'Cập nhật banner thành công', banner);
