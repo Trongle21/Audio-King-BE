@@ -15,4 +15,7 @@ router.post('/', dataMiddleWare(createOrderSchema), OrderController.create);
 // Admin: xem danh sách đơn hàng
 router.get('/', verifyToken, verifyAuth, OrderController.getAll);
 
+// Admin: xóa đơn hàng
+router.delete('/:id', verifyToken, verifyAuth, OrderController.delete);
+
 export default router;

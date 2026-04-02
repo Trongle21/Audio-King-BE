@@ -138,6 +138,24 @@ const OrderController = {
       return handleError500(res, error);
     }
   },
+
+  // Admin: xóa đơn hàng
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const order = await Order.findById(id);
+      if (!order) {
+        return handleError404(res, 'Đơn hàng không tồn tại');
+      }
+
+      await Order.findByIdAndDelete(id);
+
+      return handleSuccess200(res, 'Xóa đơn hàng thành công', order);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
 };
 
 export default OrderController;
