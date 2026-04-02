@@ -62,10 +62,15 @@ const OrderController = {
 
         subtotal += lineTotal;
 
+        const thumbnailUrl =
+          typeof product.thumbnail === 'string'
+            ? product.thumbnail
+            : product.thumbnail?.url || '';
+
         orderItems.push({
           product: product._id,
           name: product.name,
-          thumbnail: product.thumbnail,
+          thumbnail: thumbnailUrl,
           quantity: cartItem.quantity,
           unitPrice: product.price,
           sale,
