@@ -8,6 +8,8 @@ const router = Router();
 
 router.get('/', verifyToken, verifyAuth, UserController.getAll);
 
+router.put('/:id', verifyToken, verifyAuth, UserController.updateUser);
+
 router.delete('/:id', verifyToken, verifyAuth, UserController.deleteUser);
 
 router.put('/restore/:id', verifyToken, verifyAuth, UserController.restoreUser);

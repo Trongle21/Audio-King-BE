@@ -1,5 +1,6 @@
 import Product from '../models/data/Product.js';
 import Order from '../models/data/Order.js';
+import User from '../models/data/User.js';
 import {
   handleSuccess200,
   handleSuccess201,
@@ -82,9 +83,18 @@ const OrderController = {
       const shippingFee = 0;
       const total = subtotal + shippingFee;
 
+      const normalizedPhone = String(phone || '').trim();
+      const linkedUser = await User.findOne({
+        phone: normalizedPhone,
+        isDelete: false,
+      })
+        .select('_id')
+        .lean();
+
       const order = await Order.create({
+        user: linkedUser?._id || null,
         customerName,
-        phone,
+        phone: normalizedPhone,
         address,
         note,
         items: orderItems,
