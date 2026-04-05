@@ -46,6 +46,16 @@ const OrderSchema = new Schema(
       default: 'pending',
       index: true,
     },
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'paid'],
+      default: 'unpaid',
+      index: true,
+    },
+    paidAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
