@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import Product from '../models/data/Product.js';
 import Order from '../models/data/Order.js';
 import User from '../models/data/User.js';
@@ -84,12 +85,41 @@ const OrderController = {
       const total = subtotal + shippingFee;
 
       const normalizedPhone = String(phone || '').trim();
-      const linkedUser = await User.findOne({
+
+      let linkedUser = await User.findOne({
         phone: normalizedPhone,
         isDelete: false,
-      })
-        .select('_id')
-        .lean();
+      }).select('_id');
+
+      if (!linkedUser) {
+        const randomPassword = Math.random().toString(36).slice(-10);
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(randomPassword, salt);
+
+        const phoneDigits = normalizedPhone.replace(/\D/g, '');
+        const generatedEmail = `${phoneDigits}@guest.local`;
+
+        try {
+          linkedUser = await User.create({
+            username: customerName,
+            email: generatedEmail,
+            phone: normalizedPhone,
+            password: hashPassword,
+            role: 'user',
+          });
+        } catch (createError) {
+          if (createError?.code === 11000) {
+            linkedUser = await User.findOne({
+              phone: normalizedPhone,
+              isDelete: false,
+            }).select('_id');
+          }
+
+          if (!linkedUser) {
+            throw createError;
+          }
+        }
+      }
 
       const order = await Order.create({
         user: linkedUser?._id || null,
