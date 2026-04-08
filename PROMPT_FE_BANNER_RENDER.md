@@ -5,11 +5,13 @@ Bạn là Senior Frontend Engineer (React). Hãy implement phần client để *
 ## 1) API contract bắt buộc (dựa trên BannerController)
 
 ### Lấy danh sách banner (public)
+
 - **Method**: `GET`
 - **URL**: `/api/banners`
 - **Auth**: không cần token
 
 ### Response success (200)
+
 Format BE:
 
 ```ts
@@ -39,12 +41,14 @@ type GetBannersResponse = ApiSuccess<Banner[]>;
 
 Backend sort theo `updatedAt desc` (banner mới cập nhật lên trước).
 Singleton yêu cầu mới: `GET /api/banners` trả **mảng tối đa 1 phần tử**:
+
 - `data = []` nếu chưa có banner
 - `data = [banner]` nếu có 1 banner duy nhất
 
 ## 2) Mục tiêu UI
 
 Render section banner ở trang client (home):
+
 - Nếu có dữ liệu:
   - Render slider/carousel ảnh banner.
   - Vì backend là singleton nên lấy trực tiếp `data[0].images` (không cần flatten).
@@ -55,11 +59,14 @@ Render section banner ở trang client (home):
 ## 3) Yêu cầu kỹ thuật
 
 ### API layer
+
 Tạo hàm API riêng:
+
 - `getBanners(): Promise<Banner[]>`
 - Parse response từ `{ message, data }` và return `data`.
 
 ### Hook
+
 Tạo hook `useBanners`:
 
 ```ts
@@ -73,6 +80,7 @@ type UseBannersResult = {
 ```
 
 Logic:
+
 - Gọi API khi mount.
 - Chuẩn hóa lỗi (ưu tiên `response.data.message`, fallback `"Không thể tải banner"`).
 - Parse response `{ data }` thành `banners`.
@@ -81,7 +89,9 @@ Logic:
 - Bỏ qua ảnh không có `url`.
 
 ### Component
+
 Tạo component `HomeBanner`:
+
 - Nhận dữ liệu từ `useBanners`.
 - Render:
   - loading state
@@ -96,6 +106,7 @@ Tạo component `HomeBanner`:
 ## 4) Redux (nếu dự án đang dùng Redux cho shared UI data)
 
 Nếu muốn cache banner global:
+
 - Tạo `bannerSlice`:
   - state: `items`, `status`, `error`
   - thunk: `fetchBanners`
@@ -115,6 +126,7 @@ Nếu dự án đã có React Query/RTK Query thì ưu tiên dùng cache của t
 - `src/components/common/BannerSkeleton.tsx`
 
 (Nếu dùng Redux)
+
 - `src/store/banner/bannerSlice.ts`
 - `src/store/banner/bannerSelectors.ts`
 
@@ -132,4 +144,3 @@ Nếu dự án đã có React Query/RTK Query thì ưu tiên dùng cache của t
 - Dot indicator + next/prev.
 - Click banner để điều hướng (nếu sau này BE có thêm link).
 - Dùng `memo` hoặc tối ưu re-render cho danh sách ảnh lớn.
-
