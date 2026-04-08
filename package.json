@@ -7,9 +7,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "json": "json-server db.json --port 3000 --watch",
-    "start": "nodemon api/index.js",
-    "build": "npm run lint && npm run format",
+    "dev": "nodemon api/index.js",
+    "start": "node api/index.js",
+    "build": "npm run lint && npm run format:check",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

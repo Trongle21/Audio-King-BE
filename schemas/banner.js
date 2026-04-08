@@ -18,4 +18,3 @@ const deleteBannerImagesSchema = z
   );
 
 export { deleteBannerImagesSchema };
-

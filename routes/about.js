@@ -173,7 +173,9 @@ const AboutController = {
       let images = [];
 
       if (uploadedFiles.length) {
-        images = await Promise.all(uploadedFiles.map(file => uploadImageFile(file)));
+        images = await Promise.all(
+          uploadedFiles.map(file => uploadImageFile(file))
+        );
       } else if (req.body.url) {
         images = [
           {
@@ -220,8 +222,12 @@ const AboutController = {
         about.images[index].url = uploadedImage.url;
         about.images[index].alt = req.body.alt || uploadedImage.alt;
       } else {
-        if (typeof req.body.url !== 'undefined') about.images[index].url = req.body.url;
-        if (typeof req.body.alt !== 'undefined') about.images[index].alt = req.body.alt;
+        if (typeof req.body.url !== 'undefined') {
+          about.images[index].url = req.body.url;
+        }
+        if (typeof req.body.alt !== 'undefined') {
+          about.images[index].alt = req.body.alt;
+        }
       }
 
       await about.save();
