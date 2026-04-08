@@ -1,5 +1,7 @@
+import bcrypt from 'bcryptjs';
 import Product from '../models/data/Product.js';
 import Order from '../models/data/Order.js';
+import User from '../models/data/User.js';
 import {
   handleSuccess200,
   handleSuccess201,
@@ -62,10 +64,15 @@ const OrderController = {
 
         subtotal += lineTotal;
 
+        const thumbnailUrl =
+          typeof product.thumbnail === 'string'
+            ? product.thumbnail
+            : product.thumbnail?.url || '';
+
         orderItems.push({
           product: product._id,
           name: product.name,
-          thumbnail: product.thumbnail,
+          thumbnail: thumbnailUrl,
           quantity: cartItem.quantity,
           unitPrice: product.price,
           sale,
@@ -77,9 +84,47 @@ const OrderController = {
       const shippingFee = 0;
       const total = subtotal + shippingFee;
 
+      const normalizedPhone = String(phone || '').trim();
+
+      let linkedUser = await User.findOne({
+        phone: normalizedPhone,
+        isDelete: false,
+      }).select('_id');
+
+      if (!linkedUser) {
+        const randomPassword = Math.random().toString(36).slice(-10);
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(randomPassword, salt);
+
+        const phoneDigits = normalizedPhone.replace(/\D/g, '');
+        const generatedEmail = `${phoneDigits}@guest.local`;
+
+        try {
+          linkedUser = await User.create({
+            username: customerName,
+            email: generatedEmail,
+            phone: normalizedPhone,
+            password: hashPassword,
+            role: 'user',
+          });
+        } catch (createError) {
+          if (createError?.code === 11000) {
+            linkedUser = await User.findOne({
+              phone: normalizedPhone,
+              isDelete: false,
+            }).select('_id');
+          }
+
+          if (!linkedUser) {
+            throw createError;
+          }
+        }
+      }
+
       const order = await Order.create({
+        user: linkedUser?._id || null,
         customerName,
-        phone,
+        phone: normalizedPhone,
         address,
         note,
         items: orderItems,
@@ -97,7 +142,7 @@ const OrderController = {
   // Admin: xem danh sách đơn hàng
   getAll: async (req, res) => {
     try {
-      const { page = 1, limit = 12, status } = req.query;
+      const { page = 1, limit = 12, status, paymentStatus } = req.query;
 
       const pageNum = Math.max(Number(page) || 1, 1);
       const limitNum = Math.max(Number(limit) || 12, 1);
@@ -106,6 +151,9 @@ const OrderController = {
       const matchStage = {};
       if (status) {
         matchStage.status = status;
+      }
+      if (paymentStatus) {
+        matchStage.paymentStatus = paymentStatus;
       }
 
       const [orders, total] = await Promise.all([
@@ -127,8 +175,60 @@ const OrderController = {
         },
         filter: {
           status: status || null,
+          paymentStatus: paymentStatus || null,
         },
       });
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Admin: cập nhật trạng thái thanh toán
+  updatePaymentStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { paymentStatus } = req.body;
+
+      if (!['unpaid', 'paid'].includes(paymentStatus)) {
+        return handleError400(
+          res,
+          "paymentStatus phải là 'unpaid' hoặc 'paid'"
+        );
+      }
+
+      const order = await Order.findById(id);
+      if (!order) {
+        return handleError404(res, 'Đơn hàng không tồn tại');
+      }
+
+      order.paymentStatus = paymentStatus;
+      order.paidAt = paymentStatus === 'paid' ? new Date() : null;
+
+      await order.save();
+
+      return handleSuccess200(
+        res,
+        'Cập nhật trạng thái thanh toán thành công',
+        order
+      );
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Admin: xóa đơn hàng
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const order = await Order.findById(id);
+      if (!order) {
+        return handleError404(res, 'Đơn hàng không tồn tại');
+      }
+
+      await Order.findByIdAndDelete(id);
+
+      return handleSuccess200(res, 'Xóa đơn hàng thành công', order);
     } catch (error) {
       return handleError500(res, error);
     }

@@ -20,6 +20,12 @@ const OrderItemSchema = new Schema(
 
 const OrderSchema = new Schema(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
     customerName: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
     address: { type: String, required: true, trim: true },
@@ -39,6 +45,16 @@ const OrderSchema = new Schema(
       enum: ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'],
       default: 'pending',
       index: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'paid'],
+      default: 'unpaid',
+      index: true,
+    },
+    paidAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
