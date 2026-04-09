@@ -127,6 +127,39 @@ const CategoryController = {
     }
   },
 
+  // Xóa vĩnh viễn category khỏi DB (admin)
+  hardDelete: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const category = await Category.findById(id);
+      if (!category) {
+        return handleError404(res, 'Category không tồn tại');
+      }
+
+      // Chặn xóa cứng nếu còn product đang tham chiếu category này
+      const hasAnyProducts = await Product.exists({
+        categories: id,
+      });
+
+      if (hasAnyProducts) {
+        return handleError400(
+          res,
+          'Category đang có sản phẩm liên quan, không thể xóa vĩnh viễn'
+        );
+      }
+
+      await Category.findByIdAndDelete(id);
+      return handleSuccess200(
+        res,
+        'Xóa vĩnh viễn category thành công',
+        category
+      );
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
   // Lấy danh sách category + products (user & admin) + tìm kiếm + phân trang
   getAllWithProducts: async (req, res) => {
     try {

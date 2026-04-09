@@ -12,6 +12,14 @@ router.patch('/:id', verifyToken, verifyAuth, CategoryController.update);
 // Xóa mềm category (admin) - chặn nếu còn sản phẩm
 router.delete('/:id', verifyToken, verifyAuth, CategoryController.softDelete);
 
+// Xóa cứng category khỏi DB (admin) - chặn nếu còn sản phẩm tham chiếu
+router.delete(
+  '/:id/hard',
+  verifyToken,
+  verifyAuth,
+  CategoryController.hardDelete
+);
+
 // Khôi phục category (admin)
 router.patch(
   '/:id/restore',
