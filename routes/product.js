@@ -45,6 +45,17 @@ router.patch(
   ProductController.restore
 );
 
+// Admin: danh sách sản phẩm đã xóa mềm (trash)
+router.get('/deleted', verifyToken, verifyAuth, ProductController.getDeleted);
+
+// Admin: xóa vĩnh viễn sản phẩm khỏi DB
+router.delete(
+  '/:id/hard',
+  verifyToken,
+  verifyAuth,
+  ProductController.hardDelete
+);
+
 // User + Admin: danh sách sản phẩm (tìm kiếm, filter)
 router.get('/', ProductController.getAll);
 

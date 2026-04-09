@@ -1,5 +1,6 @@
 import Product from '../models/data/Product.js';
 import Category from '../models/data/Category.js';
+import Order from '../models/data/Order.js';
 import cloudinary from '../configs/cloudinary.js';
 import {
   handleSuccess200,
@@ -264,6 +265,132 @@ const ProductController = {
       await product.save();
 
       return handleSuccess200(res, 'Khôi phục sản phẩm thành công', product);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Admin: danh sách sản phẩm đã xóa mềm (trash) + tìm kiếm + filter + sort + phân trang
+  getDeleted: async (req, res) => {
+    try {
+      const {
+        q,
+        status,
+        categoryId,
+        sortBy = 'deletedAt',
+        order = 'desc',
+        page = 1,
+        limit = 12,
+      } = req.query;
+
+      const matchStage = {
+        isDelete: true,
+      };
+
+      if (q) {
+        matchStage.$or = [{ name: { $regex: q, $options: 'i' } }];
+      }
+
+      if (status !== undefined) {
+        const statusNum = Number(status);
+        if (!isNaN(statusNum) && [0, 1, 2].includes(statusNum)) {
+          matchStage.status = statusNum;
+        }
+      }
+
+      if (categoryId) {
+        matchStage.categories = { $in: [categoryId] };
+      }
+
+      const allowedSort = {
+        name: 'name',
+        price: 'price',
+        createdAt: 'createdAt',
+        deletedAt: 'updatedAt',
+      };
+
+      const sortField = allowedSort[sortBy] || 'updatedAt';
+      const sortDirection = order === 'asc' ? 1 : -1;
+
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 12, 1);
+      const skip = (pageNum - 1) * limitNum;
+
+      const [products, total] = await Promise.all([
+        Product.aggregate([
+          { $match: matchStage },
+          {
+            $lookup: {
+              from: 'categories',
+              localField: 'categories',
+              foreignField: '_id',
+              as: 'categories',
+              pipeline: [
+                { $match: { isDelete: false } },
+                { $project: { _id: 1, name: 1 } },
+              ],
+            },
+          },
+          {
+            $sort: {
+              [sortField]: sortDirection,
+              _id: 1,
+            },
+          },
+          { $skip: skip },
+          { $limit: limitNum },
+        ]),
+        Product.countDocuments(matchStage),
+      ]);
+
+      return handleSuccess200(res, 'Lấy danh sách sản phẩm đã xóa thành công', {
+        items: products,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+        filter: {
+          q: q || null,
+          status: status !== undefined ? Number(status) : null,
+          categoryId: categoryId || null,
+          sortBy: sortField,
+          order: sortDirection === 1 ? 'asc' : 'desc',
+        },
+      });
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Admin: xóa vĩnh viễn sản phẩm khỏi DB
+  hardDelete: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const product = await Product.findById(id);
+      if (!product) {
+        return handleError404(res, 'Sản phẩm không tồn tại');
+      }
+
+      // Chặn xóa cứng nếu sản phẩm đã nằm trong đơn hàng
+      const hasOrders = await Order.exists({
+        'items.product': id,
+      });
+      if (hasOrders) {
+        return handleError400(
+          res,
+          'Sản phẩm đã phát sinh đơn hàng, không thể xóa vĩnh viễn'
+        );
+      }
+
+      await Product.findByIdAndDelete(id);
+      return handleSuccess200(
+        res,
+        'Xóa vĩnh viễn sản phẩm thành công',
+        product
+      );
     } catch (error) {
       return handleError500(res, error);
     }
