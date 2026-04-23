@@ -56,6 +56,33 @@ router.delete(
   ProductController.hardDelete
 );
 
+// Admin: lấy danh sách reviews của sản phẩm
+router.get('/:id/reviews', ProductController.getReviews);
+
+// Admin: thêm nhiều reviews cho sản phẩm
+router.post(
+  '/:id/reviews',
+  verifyToken,
+  verifyAuth,
+  ProductController.addReviews
+);
+
+// Admin: cập nhật toàn bộ reviews của sản phẩm
+router.put(
+  '/:id/reviews',
+  verifyToken,
+  verifyAuth,
+  ProductController.updateReviews
+);
+
+// Admin: xóa một review cụ thể
+router.delete(
+  '/:id/reviews/:reviewId',
+  verifyToken,
+  verifyAuth,
+  ProductController.deleteReview
+);
+
 // User + Admin: danh sách sản phẩm (tìm kiếm, filter)
 router.get('/', ProductController.getAll);
 

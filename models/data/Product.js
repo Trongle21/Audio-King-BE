@@ -8,6 +8,23 @@ const ImageSchema = new Schema(
   { _id: false }
 );
 
+const ReviewSchema = new Schema(
+  {
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: 5,
+    },
+    review: {
+      type: String,
+      default: '',
+      maxlength: 500,
+    },
+  },
+  { _id: true, timestamps: true }
+);
+
 const ProductSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -37,6 +54,10 @@ const ProductSchema = new Schema(
     },
     highlights: {
       type: [String],
+      default: [],
+    },
+    reviews: {
+      type: [ReviewSchema],
       default: [],
     },
     isDelete: {

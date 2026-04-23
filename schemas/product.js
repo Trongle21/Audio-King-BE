@@ -7,6 +7,19 @@ const IMAGE_SCHEMA = z.object({
   alt: z.string().max(255).optional(),
 });
 
+const REVIEW_SCHEMA = z.object({
+  rating: z
+    .number({ invalid_type_error: 'Rating phải là số' })
+    .min(1, 'Rating tối thiểu là 1 sao')
+    .max(5, 'Rating tối đa là 5 sao')
+    .default(5),
+  review: z
+    .string()
+    .max(500, 'Đánh giá không được quá 500 ký tự')
+    .optional()
+    .default(''),
+});
+
 const productBase = {
   name: z
     .string()
@@ -44,6 +57,7 @@ const productBase = {
     .min(1, 'Sản phẩm phải thuộc ít nhất 1 category'),
   images: z.array(IMAGE_SCHEMA).min(1, 'Sản phẩm phải có ít nhất 1 ảnh'),
   thumbnail: IMAGE_SCHEMA,
+  reviews: z.array(REVIEW_SCHEMA).optional().default([]),
 };
 
 const createProductSchema = z.object(productBase);
@@ -54,4 +68,17 @@ const updateProductSchema = z
   })
   .partial();
 
-export { createProductSchema, updateProductSchema };
+const addReviewSchema = z.object({
+  rating: z
+    .number({ invalid_type_error: 'Rating phải là số' })
+    .min(1, 'Rating tối thiểu là 1 sao')
+    .max(5, 'Rating tối đa là 5 sao')
+    .default(5),
+  review: z
+    .string()
+    .max(500, 'Đánh giá không được quá 500 ký tự')
+    .optional()
+    .default(''),
+});
+
+export { createProductSchema, updateProductSchema, addReviewSchema };
