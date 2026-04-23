@@ -2,6 +2,7 @@ import Product from '../models/data/Product.js';
 import Category from '../models/data/Category.js';
 import Order from '../models/data/Order.js';
 import cloudinary from '../configs/cloudinary.js';
+import mongoose from 'mongoose';
 import {
   handleSuccess200,
   handleSuccess201,
@@ -299,7 +300,8 @@ const ProductController = {
       }
 
       if (categoryId) {
-        matchStage.categories = { $in: [categoryId] };
+        const categoryObjectId = new mongoose.Types.ObjectId(categoryId);
+        matchStage.categories = { $in: [categoryObjectId] };
       }
 
       const allowedSort = {
@@ -427,7 +429,8 @@ const ProductController = {
       }
 
       if (categoryId) {
-        matchStage.categories = { $in: [categoryId] };
+        const categoryObjectId = new mongoose.Types.ObjectId(categoryId);
+        matchStage.categories = { $in: [categoryObjectId] };
       }
 
       const minPriceNum = Number(minPrice);
