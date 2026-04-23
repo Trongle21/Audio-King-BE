@@ -32,12 +32,7 @@ router.patch(
 router.get('/', CategoryController.getAllWithProducts);
 
 // Lấy danh sách category đã xóa mềm (trash) - admin
-router.get(
-  '/deleted',
-  verifyToken,
-  verifyAuth,
-  CategoryController.getDeleted
-);
+router.get('/deleted', verifyToken, verifyAuth, CategoryController.getDeleted);
 
 // Lấy chi tiết category theo id (user & admin)
 router.get('/:id', CategoryController.getById);
