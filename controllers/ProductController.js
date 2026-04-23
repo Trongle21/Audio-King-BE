@@ -22,7 +22,7 @@ const ProductController = {
         images,
         thumbnail,
         specifications,
-        highlights,
+        comments,
       } = req.body;
 
       const price = Number(req.body.price);
@@ -88,14 +88,14 @@ const ProductController = {
         }
       }
 
-      let parsedHighlights = [];
-      if (Array.isArray(highlights)) {
-        parsedHighlights = highlights;
-      } else if (typeof highlights === 'string') {
+      let parsedComments = [];
+      if (Array.isArray(comments)) {
+        parsedComments = comments;
+      } else if (typeof comments === 'string') {
         try {
-          parsedHighlights = JSON.parse(highlights);
+          parsedComments = JSON.parse(comments);
         } catch {
-          parsedHighlights = [];
+          parsedComments = [];
         }
       }
 
@@ -152,7 +152,7 @@ const ProductController = {
         images: parsedImages,
         thumbnail: parsedThumbnail,
         specifications: parsedSpecifications,
-        highlights: parsedHighlights,
+        comments: parsedComments,
       });
 
       return handleSuccess201(res, 'Tạo sản phẩm thành công', product);
@@ -214,8 +214,8 @@ const ProductController = {
         product.thumbnail = updateData.thumbnail;
       if (typeof updateData.specifications !== 'undefined')
         product.specifications = updateData.specifications;
-      if (typeof updateData.highlights !== 'undefined')
-        product.highlights = updateData.highlights;
+      if (typeof updateData.comments !== 'undefined')
+        product.comments = updateData.comments;
 
       await product.save();
 
@@ -530,121 +530,6 @@ const ProductController = {
       }
 
       return handleSuccess200(res, 'Lấy chi tiết sản phẩm thành công', product);
-    } catch (error) {
-      return handleError500(res, error);
-    }
-  },
-
-  // Admin: thêm nhiều reviews cho sản phẩm
-  addReviews: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { reviews } = req.body;
-
-      const product = await Product.findById(id);
-      if (!product || product.isDelete) {
-        return handleError404(res, 'Sản phẩm không tồn tại');
-      }
-
-      if (!Array.isArray(reviews) || reviews.length === 0) {
-        return handleError400(res, 'Danh sách reviews không hợp lệ');
-      }
-
-      const newReviews = reviews.map(r => ({
-        rating: r.rating !== undefined ? Number(r.rating) : 5,
-        review: r.review || '',
-      }));
-
-      product.reviews.push(...newReviews);
-      await product.save();
-
-      return handleSuccess201(
-        res,
-        `Thêm ${newReviews.length} đánh giá thành công`,
-        product.reviews
-      );
-    } catch (error) {
-      return handleError500(res, error);
-    }
-  },
-
-  // Admin: cập nhật reviews của sản phẩm (thêm, sửa, xóa)
-  updateReviews: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { reviews } = req.body;
-
-      const product = await Product.findById(id);
-      if (!product || product.isDelete) {
-        return handleError404(res, 'Sản phẩm không tồn tại');
-      }
-
-      if (!Array.isArray(reviews)) {
-        return handleError400(res, 'Danh sách reviews không hợp lệ');
-      }
-
-      product.reviews = reviews.map(r => ({
-        _id: r._id || undefined,
-        rating: r.rating !== undefined ? Number(r.rating) : 5,
-        review: r.review || '',
-      }));
-
-      await product.save();
-
-      return handleSuccess200(
-        res,
-        'Cập nhật đánh giá thành công',
-        product.reviews
-      );
-    } catch (error) {
-      return handleError500(res, error);
-    }
-  },
-
-  // Admin: xóa một review cụ thể
-  deleteReview: async (req, res) => {
-    try {
-      const { id, reviewId } = req.params;
-
-      const product = await Product.findById(id);
-      if (!product || product.isDelete) {
-        return handleError404(res, 'Sản phẩm không tồn tại');
-      }
-
-      const reviewIndex = product.reviews.findIndex(
-        r => r._id.toString() === reviewId
-      );
-
-      if (reviewIndex === -1) {
-        return handleError404(res, 'Review không tồn tại');
-      }
-
-      product.reviews.splice(reviewIndex, 1);
-      await product.save();
-
-      return handleSuccess200(res, 'Xóa đánh giá thành công', product.reviews);
-    } catch (error) {
-      return handleError500(res, error);
-    }
-  },
-
-  // Admin: lấy danh sách reviews của sản phẩm
-  getReviews: async (req, res) => {
-    try {
-      const { id } = req.params;
-
-      const product = await Product.findById(id).select('reviews name').lean();
-
-      if (!product) {
-        return handleError404(res, 'Sản phẩm không tồn tại');
-      }
-
-      return handleSuccess200(res, 'Lấy danh sách đánh giá thành công', {
-        productId: id,
-        productName: product.name,
-        reviews: product.reviews,
-        totalReviews: product.reviews.length,
-      });
     } catch (error) {
       return handleError500(res, error);
     }
