@@ -269,6 +269,52 @@ const CategoryController = {
       return handleError500(res, error);
     }
   },
+
+  // Lấy danh sách category đã xóa mềm (trash) + tìm kiếm + phân trang (admin)
+  getDeleted: async (req, res) => {
+    try {
+      const { q, page = 1, limit = 12 } = req.query;
+
+      const matchStage = {
+        isDelete: true,
+      };
+
+      if (q) {
+        matchStage.$or = [
+          { name: { $regex: q, $options: 'i' } },
+          { slug: { $regex: q, $options: 'i' } },
+        ];
+      }
+
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 12, 1);
+      const skip = (pageNum - 1) * limitNum;
+
+      const [categories, total] = await Promise.all([
+        Category.find(matchStage)
+          .sort({ updatedAt: -1 })
+          .skip(skip)
+          .limit(limitNum)
+          .lean(),
+        Category.countDocuments(matchStage),
+      ]);
+
+      return handleSuccess200(res, 'Lấy danh sách category đã xóa thành công', {
+        items: categories,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+        filter: {
+          q: q || null,
+        },
+      });
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
 };
 
 export default CategoryController;
