@@ -534,6 +534,121 @@ const ProductController = {
       return handleError500(res, error);
     }
   },
+
+  // Lấy danh sách reviews của sản phẩm
+  getReviews: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { page = 1, limit = 10 } = req.query;
+
+      const product = await Product.findById(id);
+      if (!product || product.isDelete) {
+        return handleError404(res, 'Sản phẩm không tồn tại');
+      }
+
+      const comments = product.comments || [];
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 10, 1);
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+
+      const paginatedComments = comments.slice(startIndex, endIndex);
+
+      return handleSuccess200(res, 'Lấy danh sách reviews thành công', {
+        items: paginatedComments,
+        pagination: {
+          total: comments.length,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(comments.length / limitNum),
+        },
+      });
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Thêm nhiều reviews cho sản phẩm (admin)
+  addReviews: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reviews } = req.body;
+
+      if (!Array.isArray(reviews)) {
+        return handleError400(res, 'Reviews phải là một mảng');
+      }
+
+      const product = await Product.findById(id);
+      if (!product || product.isDelete) {
+        return handleError404(res, 'Sản phẩm không tồn tại');
+      }
+
+      const existingComments = product.comments || [];
+      product.comments = [...existingComments, ...reviews];
+      await product.save();
+
+      return handleSuccess200(res, 'Thêm reviews thành công', product.comments);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Cập nhật toàn bộ reviews của sản phẩm (admin)
+  updateReviews: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reviews } = req.body;
+
+      if (!Array.isArray(reviews)) {
+        return handleError400(res, 'Reviews phải là một mảng');
+      }
+
+      const product = await Product.findById(id);
+      if (!product || product.isDelete) {
+        return handleError404(res, 'Sản phẩm không tồn tại');
+      }
+
+      product.comments = reviews;
+      await product.save();
+
+      return handleSuccess200(
+        res,
+        'Cập nhật reviews thành công',
+        product.comments
+      );
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Xóa một review cụ thể (admin)
+  deleteReview: async (req, res) => {
+    try {
+      const { id, reviewId } = req.params;
+
+      const product = await Product.findById(id);
+      if (!product || product.isDelete) {
+        return handleError404(res, 'Sản phẩm không tồn tại');
+      }
+
+      const comments = product.comments || [];
+      const reviewIndex = comments.findIndex(
+        review => review._id?.toString() === reviewId || review.id === reviewId
+      );
+
+      if (reviewIndex === -1) {
+        return handleError404(res, 'Review không tồn tại');
+      }
+
+      comments.splice(reviewIndex, 1);
+      product.comments = comments;
+      await product.save();
+
+      return handleSuccess200(res, 'Xóa review thành công', product.comments);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
 };
 
 export default ProductController;
