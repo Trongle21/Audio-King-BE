@@ -36,8 +36,9 @@ const ProductSchema = new Schema(
       default: {},
     },
     comments: {
-      type: [String],
-      default: [],
+      type: Map,
+      of: String,
+      default: {},
     },
     isDelete: {
       type: Boolean,
