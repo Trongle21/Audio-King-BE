@@ -36,14 +36,57 @@ const ensureSingleton = async keepId => {
 };
 
 const AboutController = {
-  getAll: async (_req, res) => {
+  getAll: async (req, res) => {
     try {
-      const about = await getSingletonAbout();
-      return handleSuccess200(
-        res,
-        'Lấy danh sách about thành công',
-        about ? [about] : []
-      );
+      const {
+        q,
+        sortBy = 'createdAt',
+        order = 'desc',
+        page = 1,
+        limit = 10,
+      } = req.query;
+
+      const matchStage = {};
+
+      if (q) {
+        matchStage.$or = [{ title: { $regex: q, $options: 'i' } }];
+      }
+
+      const allowedSort = {
+        name: 'title',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      };
+
+      const sortField = allowedSort[sortBy] || 'createdAt';
+      const sortDirection = order === 'asc' ? 1 : -1;
+
+      const pageNum = Math.max(Number(page) || 1, 1);
+      const limitNum = Math.max(Number(limit) || 10, 1);
+      const skip = (pageNum - 1) * limitNum;
+
+      const [items, total] = await Promise.all([
+        About.find(matchStage)
+          .sort({ [sortField]: sortDirection, _id: 1 })
+          .skip(skip)
+          .limit(limitNum),
+        About.countDocuments(matchStage),
+      ]);
+
+      return handleSuccess200(res, 'Lấy danh sách about thành công', {
+        items,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+        filter: {
+          q: q || null,
+          sortBy: sortField,
+          order: sortDirection === 1 ? 'asc' : 'desc',
+        },
+      });
     } catch (error) {
       return handleError500(res, error);
     }
