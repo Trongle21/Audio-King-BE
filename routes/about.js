@@ -11,22 +11,8 @@ import { deleteAboutImagesSchema } from '../schemas/index.js';
 const router = Router();
 
 router.get('/', AboutController.getAll);
-router.post(
-  '/',
-  verifyToken,
-  verifyAuth,
-  upload.array('files', 10),
-  AboutController.create
-);
-router.patch(
-  '/:id',
-  verifyToken,
-  verifyAuth,
-  upload.array('files', 10),
-  AboutController.update
-);
-router.delete('/:id', verifyToken, verifyAuth, AboutController.remove);
 
+// Singleton helper endpoints: thao tác trực tiếp trên `about.images`
 router.post(
   '/images',
   verifyToken,
@@ -48,5 +34,21 @@ router.delete(
   dataMiddleWare(deleteAboutImagesSchema),
   AboutController.deleteImages
 );
+
+router.post(
+  '/',
+  verifyToken,
+  verifyAuth,
+  upload.array('files', 10),
+  AboutController.create
+);
+router.patch(
+  '/:id',
+  verifyToken,
+  verifyAuth,
+  upload.array('files', 10),
+  AboutController.update
+);
+router.delete('/:id', verifyToken, verifyAuth, AboutController.remove);
 
 export default router;

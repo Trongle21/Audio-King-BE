@@ -89,14 +89,14 @@ const ProductController = {
         }
       }
 
-      let parsedComments = [];
-      if (Array.isArray(comments)) {
+      let parsedComments = {};
+      if (comments && typeof comments === 'object') {
         parsedComments = comments;
       } else if (typeof comments === 'string') {
         try {
           parsedComments = JSON.parse(comments);
         } catch {
-          parsedComments = [];
+          parsedComments = {};
         }
       }
 
@@ -231,6 +231,28 @@ const ProductController = {
         product.comments = updateData.comments;
       if (typeof updateData.highlights !== 'undefined')
         product.highlights = updateData.highlights;
+      if (typeof updateData.specifications !== 'undefined') {
+        if (typeof updateData.specifications === 'string') {
+          try {
+            product.specifications = JSON.parse(updateData.specifications);
+          } catch {
+            product.specifications = {};
+          }
+        } else {
+          product.specifications = updateData.specifications;
+        }
+      }
+      if (typeof updateData.comments !== 'undefined') {
+        if (typeof updateData.comments === 'string') {
+          try {
+            product.comments = JSON.parse(updateData.comments);
+          } catch {
+            product.comments = {};
+          }
+        } else {
+          product.comments = updateData.comments;
+        }
+      }
 
       await product.save();
 
