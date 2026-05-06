@@ -53,6 +53,7 @@ const productBase = {
   thumbnail: IMAGE_SCHEMA,
   reviews: z.array(REVIEW_SCHEMA).optional().default([]),
   highlights: z.array(z.string()).optional().default([]),
+  promotion: z.array(z.string()).optional().default([]),
 };
 
 const createProductSchema = z.object(productBase);

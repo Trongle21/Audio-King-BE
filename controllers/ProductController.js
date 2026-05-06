@@ -24,6 +24,7 @@ const ProductController = {
         specifications,
         comments,
         highlights,
+        promotion,
       } = req.body;
 
       const price = Number(req.body.price);
@@ -111,6 +112,17 @@ const ProductController = {
         }
       }
 
+      let parsedPromotion = [];
+      if (Array.isArray(promotion)) {
+        parsedPromotion = promotion;
+      } else if (typeof promotion === 'string') {
+        try {
+          parsedPromotion = JSON.parse(promotion);
+        } catch {
+          parsedPromotion = [];
+        }
+      }
+
       const uploadedFiles = req.files || [];
       if (uploadedFiles.length) {
         const uploadedResults = await Promise.all(
@@ -166,6 +178,7 @@ const ProductController = {
         specifications: parsedSpecifications,
         comments: parsedComments,
         highlights: parsedHighlights,
+        promotion: parsedPromotion,
       });
 
       return handleSuccess201(res, 'Tạo sản phẩm thành công', product);
@@ -231,6 +244,8 @@ const ProductController = {
         product.comments = updateData.comments;
       if (typeof updateData.highlights !== 'undefined')
         product.highlights = updateData.highlights;
+      if (typeof updateData.promotion !== 'undefined')
+        product.promotion = updateData.promotion;
       if (typeof updateData.specifications !== 'undefined') {
         if (typeof updateData.specifications === 'string') {
           try {

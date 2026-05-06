@@ -39,6 +39,10 @@ const ProductSchema = new Schema(
       type: [String],
       default: [],
     },
+    promotion: {
+      type: [String],
+      default: [],
+    },
     comments: {
       type: Map,
       of: String,
