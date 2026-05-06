@@ -39,7 +39,7 @@ const ProductSchema = new Schema(
       type: [String],
       default: [],
     },
-    promotion: {
+    promotions: {
       type: [String],
       default: [],
     },

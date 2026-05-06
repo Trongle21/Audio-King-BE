@@ -24,7 +24,7 @@ const ProductController = {
         specifications,
         comments,
         highlights,
-        promotion,
+        promotions,
       } = req.body;
 
       const price = Number(req.body.price);
@@ -112,14 +112,14 @@ const ProductController = {
         }
       }
 
-      let parsedPromotion = [];
-      if (Array.isArray(promotion)) {
-        parsedPromotion = promotion;
-      } else if (typeof promotion === 'string') {
+      let parsedPromotions = [];
+      if (Array.isArray(promotions)) {
+        parsedPromotions = promotions;
+      } else if (typeof promotions === 'string') {
         try {
-          parsedPromotion = JSON.parse(promotion);
+          parsedPromotions = JSON.parse(promotions);
         } catch {
-          parsedPromotion = [];
+          parsedPromotions = [];
         }
       }
 
@@ -178,7 +178,7 @@ const ProductController = {
         specifications: parsedSpecifications,
         comments: parsedComments,
         highlights: parsedHighlights,
-        promotion: parsedPromotion,
+        promotions: parsedPromotions,
       });
 
       return handleSuccess201(res, 'Tạo sản phẩm thành công', product);
@@ -244,8 +244,8 @@ const ProductController = {
         product.comments = updateData.comments;
       if (typeof updateData.highlights !== 'undefined')
         product.highlights = updateData.highlights;
-      if (typeof updateData.promotion !== 'undefined')
-        product.promotion = updateData.promotion;
+      if (typeof updateData.promotions !== 'undefined')
+        product.promotions = updateData.promotions;
       if (typeof updateData.specifications !== 'undefined') {
         if (typeof updateData.specifications === 'string') {
           try {
