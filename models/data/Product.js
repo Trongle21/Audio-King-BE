@@ -35,6 +35,10 @@ const ProductSchema = new Schema(
       of: String,
       default: {},
     },
+    highlights: {
+      type: [String],
+      default: [],
+    },
     comments: {
       type: [String],
       default: [],

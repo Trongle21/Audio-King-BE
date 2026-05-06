@@ -28,12 +28,6 @@ const productBase = {
   price: z
     .number({ invalid_type_error: 'Giá phải là số' })
     .nonnegative('Giá không được âm'),
-  sale: z
-    .number({ invalid_type_error: 'Giá sale phải là số' })
-    .min(0, 'Sale không được âm')
-    .max(100, 'Sale không được lớn hơn 100%')
-    .nullable()
-    .optional(),
   stock: z
     .number({ invalid_type_error: 'Số lượng phải là số' })
     .int('Số lượng phải là số nguyên')
@@ -58,6 +52,7 @@ const productBase = {
   images: z.array(IMAGE_SCHEMA).min(1, 'Sản phẩm phải có ít nhất 1 ảnh'),
   thumbnail: IMAGE_SCHEMA,
   reviews: z.array(REVIEW_SCHEMA).optional().default([]),
+  highlights: z.array(z.string()).optional().default([]),
 };
 
 const createProductSchema = z.object(productBase);
