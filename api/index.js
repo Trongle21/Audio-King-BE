@@ -11,6 +11,8 @@ await connect();
 const allowedOrigins = [
   'http://localhost:3000',
   'https://audio-king-fe.vercel.app',
+  'https://www.hvnaudio.vn',
+  'https://hvnaudio.vn',
 ];
 
 const corsOptions = {
