@@ -200,6 +200,7 @@ const CategoryController = {
                     slug: 1,
                     price: 1,
                     description: 1,
+                    thumbnail: 1,
                   },
                 },
               ],
@@ -212,6 +213,7 @@ const CategoryController = {
               slug: 1,
               isDelete: 1,
               products: 1,
+              thumbnail: 1,
             },
           },
           { $sort: { createdAt: -1, _id: 1 } },
@@ -263,6 +265,9 @@ const CategoryController = {
 
       return handleSuccess200(res, 'Lấy chi tiết category thành công', {
         ...category,
+        thumbnail:
+          category.thumbnail ||
+          (products.length > 0 ? products[0].thumbnail : null),
         products,
       });
     } catch (error) {
